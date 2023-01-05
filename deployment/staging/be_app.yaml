@@ -29,7 +29,7 @@ metadata:
   name: cilist-be-staging
   namespace: staging
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
   - port: 80
     targetPort: 5000

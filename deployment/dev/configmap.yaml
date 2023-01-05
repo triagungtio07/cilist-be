@@ -12,4 +12,3 @@ data:
   DATABASE_DATABASE: cilist
   DATABASE_HOST: mysql-service-cilist-dev.dev.svc.cluster.local
   DATABASE_PORT: "3306"
-  REACT_APP_BACKEND_URL: dev-be.coffestory.de
