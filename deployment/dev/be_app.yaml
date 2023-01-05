@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cilist-be-dev
+  namespace: dev
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cilist-be-dev
+  template:
+    metadata:
+      labels:
+        app: cilist-be-dev
+    spec:
+      containers:
+      - name: cilist-be-dev
+        image: triagungtio/cilist-be:{{NEW_TAG}}
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: cilist-env-dev
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cilist-be-dev
+  namespace: dev
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 5000
+  selector:
+    app: cilist-be-dev

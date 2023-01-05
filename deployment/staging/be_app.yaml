@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cilist-be-staging
+  namespace: staging
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cilist-be-staging
+  template:
+    metadata:
+      labels:
+        app: cilist-be-staging
+    spec:
+      containers:
+      - name: cilist-be-staging
+        image: triagungtio/cilist-be:{{NEW_TAG}}
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: cilist-env-staging
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cilist-be-staging
+  namespace: staging
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 5000
+  selector:
+    app: cilist-be-staging
