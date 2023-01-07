@@ -83,6 +83,9 @@ pipeline {
                         sh "kubectl rollout status deployment  cilist-be-dev -n dev"
                  }
                 } catch (err) {
+                    echo err.getMessage()
+                     echo "Error detected, but we will continue."
+
                     echo "Caught: ${err}"
                     currentBuild.result = 'FAILURE'
                      }    
