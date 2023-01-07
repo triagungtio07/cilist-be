@@ -52,7 +52,6 @@ pipeline {
                         sh "kubectl apply -f deployment/dev/configmap.yaml"
                         sh 'cat deployment/dev/be_app.yaml | sed "s/{{NEW_TAG}}/0.$BUILD_NUMBER-dev/g" |  kubectl apply -f -'
                         sh "kubectl apply -f deployment/dev/be_hpa.yaml"
-                        sh "kubectl rollout status deployment  cilist-be-dev -n dev"
                  }
                 }
                 else if (env.BRANCH_NAME == 'staging') {
