@@ -26,15 +26,15 @@ spec:
         envFrom:
         - configMapRef:
             name: cilist-env-dev
-        readinessProbe:
-            initialDelaySeconds: 1
-            periodSeconds: 2
-            timeoutSeconds: 1
-            successThreshold: 1
-            failureThreshold: 1
-            httpGet:
-              path: /health
-              port: 5000
+        # readinessProbe:
+        #     initialDelaySeconds: 1
+        #     periodSeconds: 2
+        #     timeoutSeconds: 1
+        #     successThreshold: 1
+        #     failureThreshold: 1
+        #     httpGet:
+        #       path: /health
+        #       port: 5000
 
 ---
 apiVersion: v1

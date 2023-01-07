@@ -59,8 +59,7 @@ export const deleteUser = async(req, res) =>{
 
 export const getHealth = async(req, res) =>{
     try {
-        response = "healty"
-        res.status(200).json(response);
+        res.status(200).json({msg: "healthy"});
     } catch (error) {
         console.log(error.message);
     }
