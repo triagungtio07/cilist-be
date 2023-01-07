@@ -20,17 +20,21 @@ spec:
     spec:
       containers:
       - name: cilist-be-dev
-        image: triagungtio/cilist-be:{{NEW_TAG}}
+        image: triagungtio/cilist-be:0.4-dev
         ports:
         - containerPort: 5000
         envFrom:
         - configMapRef:
             name: cilist-env-dev
         readinessProbe:
-          httpGet:
-            path: /health
-            port: 5000
-          successThreshold: 3
+            initialDelaySeconds: 1
+            periodSeconds: 2
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 1
+            httpGet:
+              path: /health
+              port: 5000
 
 ---
 apiVersion: v1
