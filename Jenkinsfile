@@ -86,6 +86,10 @@ pipeline {
                     echo err.getMessage()
                      echo "Error detected, but we will continue."
 
+                      withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
+                        sh "kubectl rollout undo deployment  cilist-be-dev -n dev"
+                        sh "kubectl rollout status deployment  cilist-be-dev -n dev"
+                    }
                     echo "Caught: ${err}"
                     currentBuild.result = 'FAILURE'
                      }    
