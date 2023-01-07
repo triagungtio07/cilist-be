@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: cilist-be-dev
-        image: triagungtio/cilist-be:0.4-dev
+        image: triagungtio/cilist-be:{{NEW_TAG}}
         ports:
         - containerPort: 5000
         envFrom:
