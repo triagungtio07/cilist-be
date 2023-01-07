@@ -74,6 +74,39 @@ pipeline {
                 }
         }
       }
+    }
+    stage('Check Kuberneted Deployment') {
+        steps {
+        script {
+             if (env.BRANCH_NAME == 'dev') {
+                try {
+                  withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
+                        sh "kubectl rollout status deployment  cilist-be-dev -n dev"
+                 }
+                } catch (err) {
+                    echo "Caught: ${err}"
+                    currentBuild.result = 'FAILURE'
+                     }    
+                }
+                else if (env.BRANCH_NAME == 'staging') {
+                    withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
+                        sh "kubectl apply -f deployment/staging/configmap.yaml"
+                        sh 'cat deployment/staging/be_app.yaml | sed "s/{{NEW_TAG}}/0.$BUILD_NUMBER-staging/g" |  kubectl apply -f -'
+                        sh "kubectl apply -f deployment/staging/be_hpa.yaml"
+                 }
+                }
+                else if (env.BRANCH_NAME == 'main') {
+                    withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
+                        sh "kubectl apply -f deployment/production/configmap.yaml"
+                        sh 'cat deployment/production/be_app.yaml | sed "s/{{NEW_TAG}}/0.$BUILD_NUMBER-production/g" |  kubectl apply -f -'
+                        sh "kubectl apply -f deployment/production/be_hpa.yaml"
+                 }
+                }
+                else {
+                    sh 'echo Nothing to deploy'
+                }
+        }
+      }
     } 
 }
 
