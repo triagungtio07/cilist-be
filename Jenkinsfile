@@ -163,7 +163,6 @@ pipeline {
                             }             
                         }       
                  }
-                }
                 else if (env.BRANCH_NAME == 'main') {
                     slackSend channel: '#jenkins',
                     color: 'good',
@@ -185,16 +184,15 @@ pipeline {
                             }             
                         }       
                      
+                 } 
+                 else {
+                    sh 'echo Nothing to deploy'
                  }
                 }
-                else {
-                    sh 'echo Nothing to deploy'
-             }
          }
       }
-    } 
-}
-
+  }
+    
  post {
     success {
         script {
@@ -213,9 +211,9 @@ pipeline {
                 message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More info at: ${env.BUILD_URL}"
             }
         }
+    }    
     }
-    
-    }
-        
 }
+        
+
 
