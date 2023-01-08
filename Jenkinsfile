@@ -125,35 +125,29 @@ pipeline {
                 slackSend channel: '#jenkins',
                 color: 'good',
                 message: "*CHECKING DEPLOYMENT:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}" 
-                try {
-                  withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
-                        sh "kubectl rollout status deployment  cilist-be-dev -n dev"
-                 }
-                } catch (err) {
-                    currentBuild.result = 'FAILURE'
 
-                    slackSend channel: '#jenkins',
-                    color: 'danger',
-                    message: "*DEPLOYMENT ISSUE:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} Start Revert Deployment" 
+                        try {
+                          withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
+                                sh "kubectl rollout status deployment  cilist-be-dev -n dev"
+                         }
+                        } catch (err) {
+                            currentBuild.currentResult = 'FAILURE'
+                            slackSend channel: '#jenkins',
+                            color: 'danger',
+                            message: "*DEPLOYMENT ISSUE:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} Start Revert Deployment" 
 
-                    //Start undo deployment
-                    withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
-                        sh "kubectl rollout undo deployment  cilist-be-dev -n dev"
+                            //Start undo deployment
+                            withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
+                                sh "kubectl rollout undo deployment  cilist-be-dev -n dev"
+                            }             
+                            }  
+                     
+                    echo currentBuild.currentResult
+                    if (currentBuild.currentResult == 'FAILURE'){
+                        echo 'ERROR  INI WOI'
+
                     }
-
-                    try {
-                        withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
-                        sh "kubectl rollout status deployment  cilist-be-dev -n dev"
-                        }
-                        slackSend channel: '#jenkins',
-                        color: 'good',
-                        message: "*SUCCESS REVERT:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}"
-                    } catch (err) {
-                        slackSend channel: '#jenkins',
-                        color: 'danger',
-                        message: "*FAILED TO REVERT:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}"
-                    }   
-                    }      
+                       
                 }    
                 else if (env.BRANCH_NAME == 'staging') {
                     withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
@@ -171,8 +165,8 @@ pipeline {
                 }
                 else {
                     sh 'echo Nothing to deploy'
-                }
-        }
+             }
+         }
       }
     } 
 }
