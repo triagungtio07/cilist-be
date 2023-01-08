@@ -9,7 +9,7 @@ spec:
     rollingUpdate:
       maxUnavailable: 0
       maxSurge: 1
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: cilist-be-dev
@@ -23,6 +23,11 @@ spec:
         image: triagungtio/cilist-be:{{NEW_TAG}}
         ports:
         - containerPort: 5000
+        resources:
+         limits:
+           cpu: 500m
+         requests:
+           cpu: 200m
         envFrom:
         - configMapRef:
             name: cilist-env-dev
