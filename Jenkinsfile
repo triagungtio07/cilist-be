@@ -7,17 +7,50 @@ pipeline {
     TAG = sh(returnStdout: true, script: 'echo $(git rev-parse --short HEAD)').trim()
   }
   stages {
+     stage("Notify New Running Pipeline"){
+        steps {
+                script {
+                    if (env.BRANCH_NAME == 'dev') {  
+                    slackSend channel: '#jenkins',
+                    color: 'good',
+                    message: "*START:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}"                       
+                    }
+                     else if (env.BRANCH_NAME == 'staging') {
+                    slackSend channel: '#jenkins',
+                    color: 'good',
+                    message: "*START:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}"             
+                    }
+                    else if (env.BRANCH_NAME == 'main') {
+                    slackSend channel: '#jenkins',
+                    color: 'good',
+                    message: "*START:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}"          
+                    }
+                    else {
+                        sh 'Nothing to Notify'
+                    }
+                }
+            }
+    }
     stage('Build Image') {
         steps {
             script {
-                if (env.BRANCH_NAME == 'dev') {  
-            sh 'docker build -t triagungtio/cilist-be:0.$BUILD_NUMBER-dev .'
+                if (env.BRANCH_NAME == 'dev') { 
+                    slackSend channel: '#jenkins',
+                    color: 'good',
+                    message: "*BUILDING IMAGES:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}"       
+                    sh 'docker build -t triagungtio/cilist-be:0.$BUILD_NUMBER-dev .'
                 }
                  else if (env.BRANCH_NAME == 'staging') {
-            sh 'docker build -t triagungtio/cilist-be:0.$BUILD_NUMBER-staging .'
+                    slackSend channel: '#jenkins',
+                    color: 'good',
+                    message: "*BUILDING IMAGES:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}"      
+                    sh 'docker build -t triagungtio/cilist-be:0.$BUILD_NUMBER-staging .'
                 }
                 else if (env.BRANCH_NAME == 'main') {
-            sh 'docker build -t triagungtio/cilist-be:0.$BUILD_NUMBER-production .'
+                    slackSend channel: '#jenkins',
+                    color: 'good',
+                    message: "*BUILDING IMAGES:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}"      
+                    sh 'docker build -t triagungtio/cilist-be:0.$BUILD_NUMBER-production .'
                 }
                 else {
                     sh 'echo Nothing to Build'
@@ -29,14 +62,22 @@ pipeline {
         steps {
             script {
              if (env.BRANCH_NAME == 'dev') {
-            sh 'docker push triagungtio/cilist-be:0.$BUILD_NUMBER-dev'
+                slackSend channel: '#jenkins',
+                color: 'good',
+                message: "*PUSHING IMAGE TO REGISTRY:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}"       
+                sh 'docker push triagungtio/cilist-be:0.$BUILD_NUMBER-dev'
                 }
                 else if (env.BRANCH_NAME == 'staging') {
-            sh 'docker push triagungtio/cilist-be:0.$BUILD_NUMBER-staging'
+                slackSend channel: '#jenkins',
+                color: 'good',
+                message: "*PUSHING IMAGE TO REGISTRY:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}"      
+                sh 'docker push triagungtio/cilist-be:0.$BUILD_NUMBER-staging'
                 }
                 else if (env.BRANCH_NAME == 'main') {
-            sh 'docker push triagungtio/cilist-be:0.$BUILD_NUMBER-production'
-
+                slackSend channel: '#jenkins',
+                color: 'good',
+                message: "*PUSHING IMAGE TO REGISTRY:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}"      
+                sh 'docker push triagungtio/cilist-be:0.$BUILD_NUMBER-production'
                 }
                 else {
                     sh 'echo Nothing to Push'
@@ -48,24 +89,27 @@ pipeline {
         steps {
         script {
              if (env.BRANCH_NAME == 'dev') {
+                    slackSend channel: '#jenkins',
+                    color: 'good',
+                    message: "*DEPLOYING TO KUBERNETES:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}"
                     withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
-                        sh "kubectl apply -f deployment/dev/configmap.yaml"
                         sh 'cat deployment/dev/be_app.yaml | sed "s/{{NEW_TAG}}/0.$BUILD_NUMBER-dev/g" |  kubectl apply -f -'
-                        sh "kubectl apply -f deployment/dev/be_hpa.yaml"
                  }
                 }
                 else if (env.BRANCH_NAME == 'staging') {
+                    slackSend channel: '#jenkins',
+                    color: 'good',
+                    message: "*DEPLOYING TO KUBERNETES:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}"
                     withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
-                        sh "kubectl apply -f deployment/staging/configmap.yaml"
                         sh 'cat deployment/staging/be_app.yaml | sed "s/{{NEW_TAG}}/0.$BUILD_NUMBER-staging/g" |  kubectl apply -f -'
-                        sh "kubectl apply -f deployment/staging/be_hpa.yaml"
                  }
                 }
                 else if (env.BRANCH_NAME == 'main') {
+                    slackSend channel: '#jenkins',
+                    color: 'good',
+                    message: "*DEPLOYING TO KUBERNETES:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}"
                     withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
-                        sh "kubectl apply -f deployment/production/configmap.yaml"
                         sh 'cat deployment/production/be_app.yaml | sed "s/{{NEW_TAG}}/0.$BUILD_NUMBER-production/g" |  kubectl apply -f -'
-                        sh "kubectl apply -f deployment/production/be_hpa.yaml"
                  }
                 }
                 else {
@@ -74,38 +118,55 @@ pipeline {
         }
       }
     }
-    stage('Check Kuberneted Deployment') {
+    stage('Check Deployment') {
         steps {
         script {
              if (env.BRANCH_NAME == 'dev') {
+                slackSend channel: '#jenkins',
+                color: 'good',
+                message: "*CHECKING DEPLOYMENT:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}" 
                 try {
                   withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
                         sh "kubectl rollout status deployment  cilist-be-dev -n dev"
                  }
                 } catch (err) {
-                    echo err.getMessage()
-                     echo "Error detected, but we will continue."
-
-                      withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
-                        sh "kubectl rollout undo deployment  cilist-be-dev -n dev"
-                        sh "kubectl rollout status deployment  cilist-be-dev -n dev"
-                    }
-                    echo "Caught: ${err}"
                     currentBuild.result = 'FAILURE'
-                     }    
-                }
+
+                    slackSend channel: '#jenkins',
+                    color: 'danger',
+                    message: "*DEPLOYMENT ISSUE:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} Start Revert Deployment" 
+
+                    //Start undo deployment
+                    withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
+                        sh "kubectl rollout undo deployment  cilist-be-dev -n dev"
+                    }
+
+                    try {
+                        withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
+                        sh "kubectl rollout status deployment  cilist-be-dev -n dev"
+                        }
+                        slackSend channel: '#jenkins',
+                        color: 'good',
+                        message: "*SUCCESS REVERT:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}"
+                    } catch (err) {
+                        slackSend channel: '#jenkins',
+                        color: 'danger',
+                        message: "*FAILED TO REVERT:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}"
+                    }   
+                    }      
+                }    
                 else if (env.BRANCH_NAME == 'staging') {
                     withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
-                        sh "kubectl apply -f deployment/staging/configmap.yaml"
+                       
                         sh 'cat deployment/staging/be_app.yaml | sed "s/{{NEW_TAG}}/0.$BUILD_NUMBER-staging/g" |  kubectl apply -f -'
-                        sh "kubectl apply -f deployment/staging/be_hpa.yaml"
+    
                  }
                 }
                 else if (env.BRANCH_NAME == 'main') {
                     withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', serverUrl: '') {
-                        sh "kubectl apply -f deployment/production/configmap.yaml"
+                
                         sh 'cat deployment/production/be_app.yaml | sed "s/{{NEW_TAG}}/0.$BUILD_NUMBER-production/g" |  kubectl apply -f -'
-                        sh "kubectl apply -f deployment/production/be_hpa.yaml"
+                     
                  }
                 }
                 else {
@@ -116,23 +177,27 @@ pipeline {
     } 
 }
 
-// if (env.BRANCH_NAME == 'dev' || env.BRANCH_NAME == 'staging' || env.BRANCH_NAME == 'prod' ) {
-//      post {
-//             success {
-//                 slackSend channel: '#jenkins',
-//                 color: 'good',
-//                 message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More info at: ${env.BUILD_URL}"
-//             }    
-
-//             failure {
-//                 slackSend channel: '#jenkins',
-//                 color: 'danger',
-//                 message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More info at: ${env.BUILD_URL}"
-//                 }
-
-//         }
-     
-//     }
+ post {
+    success {
+        script {
+           if (env.BRANCH_NAME == 'dev' || env.BRANCH_NAME == 'staging' || env.BRANCH_NAME == 'prod' ) {
+                slackSend channel: '#jenkins',
+                color: 'good',
+                message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More info at: ${env.BUILD_URL}" 
+           } 
+        }
+    } 
+    failure {
+        script {
+            if (env.BRANCH_NAME == 'dev' || env.BRANCH_NAME == 'staging' || env.BRANCH_NAME == 'prod' ) {
+                slackSend channel: '#jenkins',
+                color: 'danger',
+                message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More info at: ${env.BUILD_URL}"
+            }
+        }
+    }
+    
+    }
         
 }
 
