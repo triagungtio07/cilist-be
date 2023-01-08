@@ -1,12 +1,9 @@
-// import express from "express";
-// import cors from "cors";
-// import UserRoute from "./routes/UserRoute.js";
-// import dotenv from "dotenv";
+import express from "express";
+import cors from "cors";
+import UserRoute from "./routes/UserRoute.js";
+import dotenv from "dotenv";
 
-
-
-
-// load .env
+//load .env
 dotenv.config()
 
 const BASE_URL_PORT = process.env.BASE_URL_PORT
