@@ -4,7 +4,7 @@ metadata:
   name: cilist-be-prod
   namespace: prod
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: cilist-be-prod
@@ -18,9 +18,23 @@ spec:
         image: triagungtio/cilist-be:{{NEW_TAG}}
         ports:
         - containerPort: 5000
+        resources:
+         limits:
+           cpu: 500m
+         requests:
+           cpu: 200m
         envFrom:
         - configMapRef:
             name: cilist-env-prod
+        readinessProbe:
+            initialDelaySeconds: 1
+            periodSeconds: 2
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 1
+            httpGet:
+              path: /health
+              port: 5000
 
 ---
 apiVersion: v1
