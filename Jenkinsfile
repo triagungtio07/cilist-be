@@ -26,6 +26,7 @@ pipeline {
                     message: "*START:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}"          
                     }
                     else {
+                    
                         sh 'Nothing to Notify'
                     }
                 }
