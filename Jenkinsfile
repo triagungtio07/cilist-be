@@ -7,6 +7,23 @@ pipeline {
     TAG = sh(returnStdout: true, script: 'echo $(git rev-parse --short HEAD)').trim()
   }
   stages {
+
+    stage ("Start Deployments") {
+      steps {
+       		script {
+             if (env.BRANCH_NAME == 'main'){
+
+               // Create an Approval Button with a timeout of 15minutes.
+	                timeout(time: 15, unit: "MINUTES") {
+	                    input message: 'Do you want to approve the deployment?', ok: 'Yes'
+	                }
+			
+	                echo "Initiating deployment"
+             }
+            }
+      }
+    }
+
      stage("Notify New Running Pipeline"){
         steps {
                 script {
@@ -192,6 +209,27 @@ pipeline {
                 }
          }
       }
+
+     stage('Delete Image') {
+        steps {
+            script {
+                if (env.BRANCH_NAME == 'dev') {   
+                    sh 'docker image rm -p triagungtio/cilist-be:0.$BUILD_NUMBER-dev '                                  
+                }
+                 else if (env.BRANCH_NAME == 'staging') {
+                    sh 'docker image rm -p  triagungtio/cilist-be:0.$BUILD_NUMBER-staging '   
+                }
+                else if (env.BRANCH_NAME == 'main') {
+                    sh 'docker image rm - p triagungtio/cilist-be:0.$BUILD_NUMBER-production ' 
+                }
+                
+                else {
+                    sh 'echo Nothing to Build'
+                }
+            }
+        }
+    }
+
   }
     
  post {
