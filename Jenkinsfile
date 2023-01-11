@@ -7,7 +7,6 @@ pipeline {
     TAG = sh(returnStdout: true, script: 'echo $(git rev-parse --short HEAD)').trim()
   }
   stages {
-
     stage ("Start Deployments") {
       steps {
        		script {
